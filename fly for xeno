@@ -100,7 +100,7 @@ local function createGui()
     speedLabel.TextSize = 14
     speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
     speedLabel.Parent = mainFrame
-    speedLabel.Text = "Velocità:"
+    speedLabel.Text = "Velocit��:"
     
     -- Text Box Velocità
     local speedBox = Instance.new("TextBox")
@@ -229,16 +229,23 @@ local function startFlying()
     
     print("🐉 DRAGO ATTIVATO! Volo iniziato!")
     
+    if bodyVelocity then bodyVelocity:Destroy() end
+    if bodyGyro then bodyGyro:Destroy() end
+    
     bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
     bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     bodyVelocity.Parent = humanoidRootPart
     
     bodyGyro = Instance.new("BodyGyro")
     bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bodyGyro.P = 9000
     bodyGyro.Parent = humanoidRootPart
     
+    if connection then connection:Disconnect() end
+    
     connection = game:GetService("RunService").RenderStepped:Connect(function()
-        if not flying then return end
+        if not flying or not bodyVelocity or not bodyGyro then return end
         
         local camera = workspace.CurrentCamera
         local moveDirection = Vector3.new(0, 0, 0)
@@ -316,6 +323,9 @@ player.CharacterAdded:Connect(function()
         screenGui:Destroy()
     end
     wait(0.5)
+    character = player.Character or player.CharacterAdded:Wait()
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    humanoid = character:WaitForChild("Humanoid")
     createGui()
 end)
 
