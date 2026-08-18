@@ -1,0 +1,331 @@
+-- Script di Volo con Pannello GUI per Delta e Xeno
+-- Con Logo Drago di Fuoco
+
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Configurazione
+local flying = false
+local speed = 50
+local panelOpen = true
+
+-- Variabili
+local bodyVelocity
+local bodyGyro
+local connection
+local screenGui
+local mainFrame
+
+-- Creare GUI
+local function createGui()
+    screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "FlyGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = playerGui
+    
+    -- Frame principale
+    mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = UDim2.new(0, 300, 0, 350)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = screenGui
+    
+    -- Effetto ombra
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 15)
+    corner.Parent = mainFrame
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(255, 100, 0)
+    stroke.Thickness = 2
+    stroke.Parent = mainFrame
+    
+    -- Logo Drago (ASCII Art stilizzato come immagine)
+    local logoLabel = Instance.new("TextLabel")
+    logoLabel.Name = "Logo"
+    logoLabel.Size = UDim2.new(1, 0, 0, 80)
+    logoLabel.Position = UDim2.new(0, 0, 0, 0)
+    logoLabel.BackgroundColor3 = Color3.fromRGB(30, 15, 0)
+    logoLabel.BorderSizePixel = 0
+    logoLabel.Font = Enum.Font.GothamBold
+    logoLabel.TextSize = 50
+    logoLabel.TextColor3 = Color3.fromRGB(255, 100, 0)
+    logoLabel.Parent = mainFrame
+    logoLabel.Text = "🐉"
+    
+    -- Titolo
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
+    titleLabel.Size = UDim2.new(1, 0, 0, 30)
+    titleLabel.Position = UDim2.new(0, 0, 0, 85)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 22
+    titleLabel.TextColor3 = Color3.fromRGB(255, 150, 0)
+    titleLabel.Parent = mainFrame
+    titleLabel.Text = "DRAGON FLY"
+    
+    -- Sottotitolo
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Name = "Subtitle"
+    subtitleLabel.Size = UDim2.new(1, 0, 0, 20)
+    subtitleLabel.Position = UDim2.new(0, 0, 0, 115)
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.Font = Enum.Font.Gotham
+    subtitleLabel.TextSize = 12
+    subtitleLabel.TextColor3 = Color3.fromRGB(200, 100, 50)
+    subtitleLabel.Parent = mainFrame
+    subtitleLabel.Text = "⚡ Volo Illimitato"
+    
+    -- Divisore
+    local divider = Instance.new("Frame")
+    divider.Size = UDim2.new(0.8, 0, 0, 2)
+    divider.Position = UDim2.new(0.1, 0, 0, 140)
+    divider.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+    divider.BorderSizePixel = 0
+    divider.Parent = mainFrame
+    
+    -- Label Velocità
+    local speedLabel = Instance.new("TextLabel")
+    speedLabel.Name = "SpeedLabel"
+    speedLabel.Size = UDim2.new(0.5, 0, 0, 25)
+    speedLabel.Position = UDim2.new(0.05, 0, 0, 155)
+    speedLabel.BackgroundTransparency = 1
+    speedLabel.Font = Enum.Font.Gotham
+    speedLabel.TextSize = 14
+    speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    speedLabel.Parent = mainFrame
+    speedLabel.Text = "Velocità:"
+    
+    -- Text Box Velocità
+    local speedBox = Instance.new("TextBox")
+    speedBox.Name = "SpeedBox"
+    speedBox.Size = UDim2.new(0.4, 0, 0, 25)
+    speedBox.Position = UDim2.new(0.55, 0, 0, 155)
+    speedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    speedBox.TextColor3 = Color3.fromRGB(255, 150, 0)
+    speedBox.Font = Enum.Font.Gotham
+    speedBox.TextSize = 14
+    speedBox.Text = tostring(speed)
+    speedBox.BorderSizePixel = 0
+    speedBox.Parent = mainFrame
+    
+    local speedBoxCorner = Instance.new("UICorner")
+    speedBoxCorner.CornerRadius = UDim.new(0, 8)
+    speedBoxCorner.Parent = speedBox
+    
+    -- Evento cambio velocità
+    speedBox.FocusLost:Connect(function()
+        local newSpeed = tonumber(speedBox.Text)
+        if newSpeed and newSpeed > 0 then
+            speed = newSpeed
+            speedBox.Text = tostring(speed)
+        else
+            speedBox.Text = tostring(speed)
+        end
+    end)
+    
+    -- Pulsante Fly
+    local flyButton = Instance.new("TextButton")
+    flyButton.Name = "FlyButton"
+    flyButton.Size = UDim2.new(0.9, 0, 0, 40)
+    flyButton.Position = UDim2.new(0.05, 0, 0, 195)
+    flyButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+    flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    flyButton.Font = Enum.Font.GothamBold
+    flyButton.TextSize = 16
+    flyButton.Parent = mainFrame
+    flyButton.Text = "🚀 ATTIVA VOLO"
+    flyButton.BorderSizePixel = 0
+    
+    local flyButtonCorner = Instance.new("UICorner")
+    flyButtonCorner.CornerRadius = UDim.new(0, 10)
+    flyButtonCorner.Parent = flyButton
+    
+    -- Evento pulsante
+    flyButton.MouseButton1Click:Connect(function()
+        if flying then
+            stopFlying()
+            flyButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+            flyButton.Text = "🚀 ATTIVA VOLO"
+        else
+            startFlying()
+            flyButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+            flyButton.Text = "⛔ DISATTIVA VOLO"
+        end
+    end)
+    
+    -- Label Controlli
+    local controlsLabel = Instance.new("TextLabel")
+    controlsLabel.Name = "Controls"
+    controlsLabel.Size = UDim2.new(0.9, 0, 0, 80)
+    controlsLabel.Position = UDim2.new(0.05, 0, 0, 245)
+    controlsLabel.BackgroundTransparency = 1
+    controlsLabel.Font = Enum.Font.Gotham
+    controlsLabel.TextSize = 12
+    controlsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    controlsLabel.TextWrapped = true
+    controlsLabel.Parent = mainFrame
+    controlsLabel.Text = "CONTROLLI:\nW/A/S/D - Movimento\nSpace - Su | Ctrl - Giù\nF - Attiva/Disattiva"
+    
+    -- Pulsante Chiudi
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -35, 0, 5)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.TextSize = 18
+    closeButton.Parent = mainFrame
+    closeButton.Text = "X"
+    closeButton.BorderSizePixel = 0
+    
+    local closeButtonCorner = Instance.new("UICorner")
+    closeButtonCorner.CornerRadius = UDim.new(0, 8)
+    closeButtonCorner.Parent = closeButton
+    
+    closeButton.MouseButton1Click:Connect(function()
+        panelOpen = false
+        mainFrame.Visible = false
+    end)
+    
+    -- Drag functionality
+    local dragging = false
+    local dragStart
+    local frameStart
+    
+    mainFrame.InputBegan:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            frameStart = mainFrame.Position
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input, gameProcessed)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            mainFrame.Position = frameStart + UDim2.new(0, delta.X, 0, delta.Y)
+        end
+    end)
+    
+    game:GetService("UserInputService").InputEnded:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+end
+
+-- Funzione per avviare il volo
+local function startFlying()
+    if flying then return end
+    flying = true
+    
+    print("🐉 DRAGO ATTIVATO! Volo iniziato!")
+    
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bodyVelocity.Parent = humanoidRootPart
+    
+    bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bodyGyro.Parent = humanoidRootPart
+    
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if not flying then return end
+        
+        local camera = workspace.CurrentCamera
+        local moveDirection = Vector3.new(0, 0, 0)
+        
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then
+            moveDirection = moveDirection + (camera.CFrame.LookVector * Vector3.new(1, 0, 1)).Unit
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.S) then
+            moveDirection = moveDirection - (camera.CFrame.LookVector * Vector3.new(1, 0, 1)).Unit
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.A) then
+            moveDirection = moveDirection - camera.CFrame.RightVector
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.D) then
+            moveDirection = moveDirection + camera.CFrame.RightVector
+        end
+        
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.Space) then
+            moveDirection = moveDirection + Vector3.new(0, 1, 0)
+        end
+        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.LeftControl) then
+            moveDirection = moveDirection - Vector3.new(0, 1, 0)
+        end
+        
+        if moveDirection.Magnitude > 0 then
+            bodyVelocity.Velocity = moveDirection.Unit * speed
+        else
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        end
+        
+        bodyGyro.CFrame = camera.CFrame
+    end)
+end
+
+-- Funzione per fermare il volo
+local function stopFlying()
+    if not flying then return end
+    flying = false
+    
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+    
+    if bodyVelocity then
+        bodyVelocity:Destroy()
+        bodyVelocity = nil
+    end
+    
+    if bodyGyro then
+        bodyGyro:Destroy()
+        bodyGyro = nil
+    end
+    
+    print("⛔ Volo disattivato!")
+end
+
+-- Gestione tasto F
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.F then
+        if flying then
+            stopFlying()
+        else
+            startFlying()
+        end
+    end
+end)
+
+-- Pulizia al cambio personaggio
+player.CharacterAdded:Connect(function()
+    stopFlying()
+    if screenGui then
+        screenGui:Destroy()
+    end
+    wait(0.5)
+    createGui()
+end)
+
+-- Pulizia quando muori
+humanoid.Died:Connect(function()
+    stopFlying()
+end)
+
+-- Creare GUI all'inizio
+createGui()
+
+print("✅ Dragon Fly Script Caricato!")
+print("🐉 Pannello GUI aperto!")
