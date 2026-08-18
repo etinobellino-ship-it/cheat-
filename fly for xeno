@@ -100,7 +100,7 @@ local function createGui()
     speedLabel.TextSize = 14
     speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
     speedLabel.Parent = mainFrame
-    speedLabel.Text = "Velocit��:"
+    speedLabel.Text = "Velocità:"
     
     -- Text Box Velocità
     local speedBox = Instance.new("TextBox")
@@ -171,7 +171,7 @@ local function createGui()
     controlsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
     controlsLabel.TextWrapped = true
     controlsLabel.Parent = mainFrame
-    controlsLabel.Text = "CONTROLLI:\nW/A/S/D - Movimento\nSpace - Su | Ctrl - Giù\nF - Attiva/Disattiva"
+    controlsLabel.Text = "CONTROLLI:\nW/A/S/D - Movimento\nMuovi Vista - Sopra/Sotto"
     
     -- Pulsante Chiudi
     local closeButton = Instance.new("TextButton")
@@ -250,6 +250,7 @@ local function startFlying()
         local camera = workspace.CurrentCamera
         local moveDirection = Vector3.new(0, 0, 0)
         
+        -- W/A/S/D per il movimento orizzontale
         if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then
             moveDirection = moveDirection + (camera.CFrame.LookVector * Vector3.new(1, 0, 1)).Unit
         end
@@ -263,12 +264,8 @@ local function startFlying()
             moveDirection = moveDirection + camera.CFrame.RightVector
         end
         
-        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.Space) then
-            moveDirection = moveDirection + Vector3.new(0, 1, 0)
-        end
-        if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.LeftControl) then
-            moveDirection = moveDirection - Vector3.new(0, 1, 0)
-        end
+        -- Movimento verticale basato sulla visuale (Up/Down della camera)
+        moveDirection = moveDirection + (camera.CFrame.UpVector * camera.CFrame.LookVector.Y)
         
         if moveDirection.Magnitude > 0 then
             bodyVelocity.Velocity = moveDirection.Unit * speed
@@ -302,19 +299,6 @@ local function stopFlying()
     
     print("⛔ Volo disattivato!")
 end
-
--- Gestione tasto F
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.F then
-        if flying then
-            stopFlying()
-        else
-            startFlying()
-        end
-    end
-end)
 
 -- Pulizia al cambio personaggio
 player.CharacterAdded:Connect(function()
