@@ -1,5 +1,5 @@
 -- ================================
--- DRAGON FLY SCRIPT PRO V2
+-- DRAGON FLY SCRIPT PRO V2 FIXED
 -- Script di Volo Avanzato per Xeno e Delta
 -- ================================
 
@@ -32,6 +32,7 @@ local speedLabel
 local statusLabel
 local closeButton
 local minimizeIcon
+local sliderActive = false
 
 -- ================================
 -- FUNZIONI UTILITY
@@ -52,7 +53,7 @@ local function createGui()
     if screenGui then screenGui:Destroy() end
     
     screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "FlyGuiProV2"
+    screenGui.Name = "FlyGuiProV2Fixed"
     screenGui.ResetOnSpawn = false
     screenGui.DisplayOrder = 999
     screenGui.Parent = playerGui
@@ -171,6 +172,7 @@ local function createGui()
     closeButton.Parent = mainFrame
     closeButton.Text = "✕"
     closeButton.BorderSizePixel = 0
+    closeButton.ZIndex = 100
     
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 15)
@@ -194,6 +196,7 @@ local function createGui()
     minimizeIcon.Text = "−"
     minimizeIcon.BorderSizePixel = 0
     minimizeIcon.Visible = false
+    minimizeIcon.ZIndex = 100
     
     local minimizeCorner = Instance.new("UICorner")
     minimizeCorner.CornerRadius = UDim.new(0, 15)
@@ -268,6 +271,7 @@ local function createGui()
     sliderBg.BackgroundColor3 = Color3.fromRGB(40, 30, 50)
     sliderBg.BorderSizePixel = 0
     sliderBg.Parent = speedSection
+    sliderBg.ZIndex = 10
     
     local sliderCorner = Instance.new("UICorner")
     sliderCorner.CornerRadius = UDim.new(0, 6)
@@ -299,15 +303,20 @@ local function createGui()
     
     sliderBg.InputBegan:Connect(function(input, gameProcessed)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            sliderActive = true
             updateSlider(game:GetService("UserInputService"):GetMouseLocation())
         end
     end)
     
     game:GetService("UserInputService").InputChanged:Connect(function(input, gameProcessed)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            if sliderBg:FindFirstChild("_Dragging") or game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                updateSlider(game:GetService("UserInputService"):GetMouseLocation())
-            end
+        if input.UserInputType == Enum.UserInputType.MouseMovement and sliderActive then
+            updateSlider(game:GetService("UserInputService"):GetMouseLocation())
+        end
+    end)
+    
+    game:GetService("UserInputService").InputEnded:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            sliderActive = false
         end
     end)
     
@@ -318,6 +327,7 @@ local function createGui()
     modeSection.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
     modeSection.BorderSizePixel = 0
     modeSection.Parent = mainFrame
+    modeSection.ZIndex = 10
     
     local modeCorner = Instance.new("UICorner")
     modeCorner.CornerRadius = UDim.new(0, 15)
@@ -353,6 +363,7 @@ local function createGui()
         modeButton.Parent = modeSection
         modeButton.Text = mode
         modeButton.BorderSizePixel = 0
+        modeButton.ZIndex = 20
         
         local modeCorner2 = Instance.new("UICorner")
         modeCorner2.CornerRadius = UDim.new(0, 10)
@@ -376,7 +387,7 @@ local function createGui()
         end)
     end
     
-    -- ===== PULSANTE FLY PRINCIPALE =====
+    -- ===== PULSANTE FLY PRINCIPALE - SEPARATO DAL SLIDER =====
     local flyButton = Instance.new("TextButton")
     flyButton.Name = "FlyButton"
     flyButton.Size = UDim2.new(0.9, 0, 0, 55)
@@ -388,6 +399,7 @@ local function createGui()
     flyButton.Parent = mainFrame
     flyButton.Text = "🚀 ATTIVA VOLO"
     flyButton.BorderSizePixel = 0
+    flyButton.ZIndex = 50
     
     local flyCorner = Instance.new("UICorner")
     flyCorner.CornerRadius = UDim.new(0, 15)
@@ -405,21 +417,27 @@ local function createGui()
     })
     flyGradient.Parent = flyButton
     
-    flyButton.MouseButton1Click:Connect(function()
-        if Config.flying then
-            stopFlying()
-            flyButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-            flyButton.Text = "🚀 ATTIVA VOLO"
-            statusLabel.Text = "● PRONTO"
-            statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-        else
-            startFlying()
-            flyButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-            flyButton.Text = "⛔ DISATTIVA VOLO"
-            statusLabel.Text = "● IN VOLO - " .. Config.currentMode:upper()
-            statusLabel.TextColor3 = Color3.fromRGB(255, 100, 0)
-        end
-    end)
+    -- Click event PRINCIPALE del pulsante FLY
+    local flyButtonConnected = false
+    if not flyButtonConnected then
+        flyButtonConnected = true
+        flyButton.MouseButton1Click:Connect(function()
+            print("Pulsante FLY cliccato!")
+            if Config.flying then
+                stopFlying()
+                flyButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+                flyButton.Text = "🚀 ATTIVA VOLO"
+                statusLabel.Text = "● PRONTO"
+                statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+            else
+                startFlying()
+                flyButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                flyButton.Text = "⛔ DISATTIVA VOLO"
+                statusLabel.Text = "● IN VOLO - " .. Config.currentMode:upper()
+                statusLabel.TextColor3 = Color3.fromRGB(255, 100, 0)
+            end
+        end)
+    end
     
     -- Effetto hover sul pulsante
     flyButton.MouseEnter:Connect(function()
@@ -441,6 +459,7 @@ local function createGui()
     controlsSection.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
     controlsSection.BorderSizePixel = 0
     controlsSection.Parent = mainFrame
+    controlsSection.ZIndex = 10
     
     local controlsCorner = Instance.new("UICorner")
     controlsCorner.CornerRadius = UDim.new(0, 15)
@@ -624,5 +643,5 @@ end)
 -- ================================
 createGui()
 
-print("✅ DRAGON FLY PRO V2 CARICATO!")
-print("🐉 Pannello GUI aperto - Versione Ultra Premium")
+print("✅ DRAGON FLY PRO V2 FIXED CARICATO!")
+print("🐉 Pannello GUI aperto - PULSANTE RIPARATO!")
