@@ -1,5 +1,5 @@
 -- ================================
--- DRAGON FLY SCRIPT PRO
+-- DRAGON FLY SCRIPT PRO V2
 -- Script di Volo Avanzato per Xeno e Delta
 -- ================================
 
@@ -30,6 +30,8 @@ local screenGui
 local mainFrame
 local speedLabel
 local statusLabel
+local closeButton
+local minimizeIcon
 
 -- ================================
 -- FUNZIONI UTILITY
@@ -47,136 +49,228 @@ end
 -- CREAZIONE GUI AVANZATA
 -- ================================
 local function createGui()
+    if screenGui then screenGui:Destroy() end
+    
     screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "FlyGuiPro"
+    screenGui.Name = "FlyGuiProV2"
     screenGui.ResetOnSpawn = false
     screenGui.DisplayOrder = 999
     screenGui.Parent = playerGui
     
-    -- Frame principale con effetti avanzati
+    -- ===== FRAME PRINCIPALE =====
     mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 350, 0, 450)
-    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    mainFrame.Size = UDim2.new(0, 420, 0, 550)
+    mainFrame.Position = UDim2.new(0.5, -210, 0.5, -275)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
     mainFrame.BorderSizePixel = 0
     mainFrame.Parent = screenGui
     
-    -- Effetti visuali avanzati
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 20)
-    corner.Parent = mainFrame
+    -- Effetto glassmorphism
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 25)
+    mainCorner.Parent = mainFrame
     
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(255, 100, 0)
-    stroke.Thickness = 3
-    stroke.Parent = mainFrame
+    local mainStroke = Instance.new("UIStroke")
+    mainStroke.Color = Color3.fromRGB(255, 120, 0)
+    mainStroke.Thickness = 4
+    mainStroke.LineJoinMode = Enum.LineJoinMode.Round
+    mainStroke.Parent = mainFrame
     
-    local shadow = Instance.new("UIGradient")
-    shadow.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 15, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 25))
+    -- Sfondo con gradient
+    local bgGradient = Instance.new("UIGradient")
+    bgGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 10, 30)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 20))
     })
-    shadow.Parent = mainFrame
+    bgGradient.Rotation = 45
+    bgGradient.Parent = mainFrame
     
-    -- ===== HEADER =====
+    -- ===== HEADER PREMIUM =====
     local header = Instance.new("Frame")
-    header.Size = UDim2.new(1, 0, 0, 100)
+    header.Size = UDim2.new(1, 0, 0, 120)
     header.Position = UDim2.new(0, 0, 0, 0)
-    header.BackgroundColor3 = Color3.fromRGB(25, 12, 0)
+    header.BackgroundColor3 = Color3.fromRGB(30, 15, 40)
     header.BorderSizePixel = 0
     header.Parent = mainFrame
     
     local headerCorner = Instance.new("UICorner")
-    headerCorner.CornerRadius = UDim.new(0, 20)
+    headerCorner.CornerRadius = UDim.new(0, 25)
     headerCorner.Parent = header
     
-    -- Logo
+    local headerGradient = Instance.new("UIGradient")
+    headerGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 15, 40))
+    })
+    headerGradient.Rotation = 90
+    headerGradient.Parent = header
+    
+    -- Logo animato
     local logoLabel = Instance.new("TextLabel")
     logoLabel.Name = "Logo"
-    logoLabel.Size = UDim2.new(0, 60, 0, 60)
-    logoLabel.Position = UDim2.new(0, 15, 0, 15)
+    logoLabel.Size = UDim2.new(0, 80, 0, 80)
+    logoLabel.Position = UDim2.new(0, 20, 0, 15)
     logoLabel.BackgroundTransparency = 1
     logoLabel.Font = Enum.Font.GothamBold
-    logoLabel.TextSize = 50
-    logoLabel.TextColor3 = Color3.fromRGB(255, 100, 0)
+    logoLabel.TextSize = 70
+    logoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    logoLabel.TextScaled = true
     logoLabel.Parent = header
     logoLabel.Text = "🐉"
     
-    -- Titolo
+    -- Titolo premium
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "Title"
-    titleLabel.Size = UDim2.new(0, 200, 0, 35)
-    titleLabel.Position = UDim2.new(0, 85, 0, 10)
+    titleLabel.Size = UDim2.new(0, 250, 0, 50)
+    titleLabel.Position = UDim2.new(0, 110, 0, 10)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 24
-    titleLabel.TextColor3 = Color3.fromRGB(255, 150, 0)
+    titleLabel.TextSize = 32
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.TextScaled = true
     titleLabel.Parent = header
-    titleLabel.Text = "DRAGON FLY PRO"
+    titleLabel.Text = "DRAGON FLY"
     
-    -- Status
+    -- Sottotitolo
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Name = "Subtitle"
+    subtitleLabel.Size = UDim2.new(0, 250, 0, 30)
+    subtitleLabel.Position = UDim2.new(0, 110, 0, 50)
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.Font = Enum.Font.Gotham
+    subtitleLabel.TextSize = 14
+    subtitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    subtitleLabel.Parent = header
+    subtitleLabel.Text = "✨ PRO V2 - Ultimate Flight Script"
+    
+    -- Status live
     statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "Status"
-    statusLabel.Size = UDim2.new(0, 200, 0, 25)
-    statusLabel.Position = UDim2.new(0, 85, 0, 45)
+    statusLabel.Size = UDim2.new(0, 250, 0, 25)
+    statusLabel.Position = UDim2.new(0, 110, 0, 80)
     statusLabel.BackgroundTransparency = 1
     statusLabel.Font = Enum.Font.Gotham
     statusLabel.TextSize = 12
     statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
     statusLabel.TextXAlignment = Enum.TextXAlignment.Left
     statusLabel.Parent = header
-    statusLabel.Text = "✓ Pronto"
+    statusLabel.Text = "● PRONTO"
     
-    -- ===== SEZIONE VELOCITÀ =====
+    -- ===== PULSANTE CHIUDI CON ICONA =====
+    closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0, 50, 0, 50)
+    closeButton.Position = UDim2.new(1, -70, 0, 10)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.TextSize = 28
+    closeButton.Parent = mainFrame
+    closeButton.Text = "✕"
+    closeButton.BorderSizePixel = 0
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 15)
+    closeCorner.Parent = closeButton
+    
+    local closeStroke = Instance.new("UIStroke")
+    closeStroke.Color = Color3.fromRGB(255, 100, 100)
+    closeStroke.Thickness = 2
+    closeStroke.Parent = closeButton
+    
+    -- ===== ICONA MINIMIZE =====
+    minimizeIcon = Instance.new("TextLabel")
+    minimizeIcon.Name = "MinimizeIcon"
+    minimizeIcon.Size = UDim2.new(0, 50, 0, 50)
+    minimizeIcon.Position = UDim2.new(1, -130, 0, 10)
+    minimizeIcon.BackgroundColor3 = Color3.fromRGB(100, 100, 150)
+    minimizeIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+    minimizeIcon.Font = Enum.Font.GothamBold
+    minimizeIcon.TextSize = 28
+    minimizeIcon.Parent = mainFrame
+    minimizeIcon.Text = "−"
+    minimizeIcon.BorderSizePixel = 0
+    minimizeIcon.Visible = false
+    
+    local minimizeCorner = Instance.new("UICorner")
+    minimizeCorner.CornerRadius = UDim.new(0, 15)
+    minimizeCorner.Parent = minimizeIcon
+    
+    local minimizeStroke = Instance.new("UIStroke")
+    minimizeStroke.Color = Color3.fromRGB(120, 120, 180)
+    minimizeStroke.Thickness = 2
+    minimizeStroke.Parent = minimizeIcon
+    
+    closeButton.MouseButton1Click:Connect(function()
+        Config.panelOpen = false
+        mainFrame.Visible = false
+        minimizeIcon.Visible = true
+    end)
+    
+    minimizeIcon.InputBegan:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Config.panelOpen = true
+            mainFrame.Visible = true
+            minimizeIcon.Visible = false
+        end
+    end)
+    
+    -- ===== SEZIONE VELOCITÀ PREMIUM =====
     local speedSection = Instance.new("Frame")
-    speedSection.Size = UDim2.new(0.9, 0, 0, 70)
-    speedSection.Position = UDim2.new(0.05, 0, 0, 115)
-    speedSection.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    speedSection.Size = UDim2.new(0.9, 0, 0, 90)
+    speedSection.Position = UDim2.new(0.05, 0, 0, 135)
+    speedSection.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
     speedSection.BorderSizePixel = 0
     speedSection.Parent = mainFrame
     
     local speedCorner = Instance.new("UICorner")
-    speedCorner.CornerRadius = UDim.new(0, 12)
+    speedCorner.CornerRadius = UDim.new(0, 15)
     speedCorner.Parent = speedSection
     
-    -- Label velocità
+    local speedStroke = Instance.new("UIStroke")
+    speedStroke.Color = Color3.fromRGB(255, 100, 0)
+    speedStroke.Thickness = 2
+    speedStroke.Parent = speedSection
+    
+    -- Title velocità
     local speedTitleLabel = Instance.new("TextLabel")
     speedTitleLabel.Name = "SpeedTitle"
-    speedTitleLabel.Size = UDim2.new(1, 0, 0, 20)
-    speedTitleLabel.Position = UDim2.new(0, 10, 0, 5)
+    speedTitleLabel.Size = UDim2.new(1, 0, 0, 25)
+    speedTitleLabel.Position = UDim2.new(0, 15, 0, 8)
     speedTitleLabel.BackgroundTransparency = 1
     speedTitleLabel.Font = Enum.Font.GothamBold
-    speedTitleLabel.TextSize = 12
+    speedTitleLabel.TextSize = 14
     speedTitleLabel.TextColor3 = Color3.fromRGB(255, 150, 0)
     speedTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     speedTitleLabel.Parent = speedSection
-    speedTitleLabel.Text = "VELOCITÀ"
+    speedTitleLabel.Text = "⚡ VELOCITÀ"
     
-    -- Display velocità attuale
+    -- Display velocità
     speedLabel = Instance.new("TextLabel")
     speedLabel.Name = "SpeedDisplay"
-    speedLabel.Size = UDim2.new(0.5, -5, 0, 25)
-    speedLabel.Position = UDim2.new(0, 10, 0, 28)
+    speedLabel.Size = UDim2.new(1, -30, 0, 25)
+    speedLabel.Position = UDim2.new(0, 15, 0, 35)
     speedLabel.BackgroundTransparency = 1
     speedLabel.Font = Enum.Font.Gotham
     speedLabel.TextSize = 16
-    speedLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+    speedLabel.TextColor3 = Color3.fromRGB(100, 255, 150)
     speedLabel.TextXAlignment = Enum.TextXAlignment.Left
     speedLabel.Parent = speedSection
     speedLabel.Text = "50 / 200"
     
-    -- Slider velocità
+    -- Slider
     local sliderBg = Instance.new("Frame")
-    sliderBg.Size = UDim2.new(0.9, 0, 0, 8)
-    sliderBg.Position = UDim2.new(0.05, 0, 0, 55)
-    sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    sliderBg.Size = UDim2.new(0.9, 0, 0, 12)
+    sliderBg.Position = UDim2.new(0.05, 0, 0, 65)
+    sliderBg.BackgroundColor3 = Color3.fromRGB(40, 30, 50)
     sliderBg.BorderSizePixel = 0
     sliderBg.Parent = speedSection
     
     local sliderCorner = Instance.new("UICorner")
-    sliderCorner.CornerRadius = UDim.new(0, 4)
+    sliderCorner.CornerRadius = UDim.new(0, 6)
     sliderCorner.Parent = sliderBg
     
     local sliderFill = Instance.new("Frame")
@@ -186,157 +280,204 @@ local function createGui()
     sliderFill.Parent = sliderBg
     
     local fillCorner = Instance.new("UICorner")
-    fillCorner.CornerRadius = UDim.new(0, 4)
+    fillCorner.CornerRadius = UDim.new(0, 6)
     fillCorner.Parent = sliderFill
+    
+    local fillGradient = Instance.new("UIGradient")
+    fillGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 150, 0))
+    })
+    fillGradient.Parent = sliderFill
+    
+    local updateSlider = function(mousePos)
+        local relativePos = clamp((mousePos.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+        Config.speed = clamp(relativePos * Config.maxSpeed, 1, Config.maxSpeed)
+        sliderFill.Size = UDim2.new(relativePos, 0, 1, 0)
+        speedLabel.Text = round(Config.speed, 1) .. " / " .. Config.maxSpeed
+    end
     
     sliderBg.InputBegan:Connect(function(input, gameProcessed)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-            local relativePos = (mousePos.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
-            Config.speed = clamp(relativePos * Config.maxSpeed, 1, Config.maxSpeed)
-            sliderFill.Size = UDim2.new(relativePos, 0, 1, 0)
-            speedLabel.Text = round(Config.speed, 1) .. " / " .. Config.maxSpeed
+            updateSlider(game:GetService("UserInputService"):GetMouseLocation())
         end
     end)
     
     game:GetService("UserInputService").InputChanged:Connect(function(input, gameProcessed)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and sliderBg:FindFirstChild("Dragging") then
-            local mousePos = game:GetService("UserInputService"):GetMouseLocation()
-            local relativePos = (mousePos.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
-            Config.speed = clamp(relativePos * Config.maxSpeed, 1, Config.maxSpeed)
-            sliderFill.Size = UDim2.new(relativePos, 0, 1, 0)
-            speedLabel.Text = round(Config.speed, 1) .. " / " .. Config.maxSpeed
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            if sliderBg:FindFirstChild("_Dragging") or game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                updateSlider(game:GetService("UserInputService"):GetMouseLocation())
+            end
         end
     end)
     
-    -- ===== SEZIONE MODALITÀ =====
+    -- ===== SEZIONE MODALITÀ PREMIUM =====
     local modeSection = Instance.new("Frame")
-    modeSection.Size = UDim2.new(0.9, 0, 0, 60)
-    modeSection.Position = UDim2.new(0.05, 0, 0, 195)
-    modeSection.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    modeSection.Size = UDim2.new(0.9, 0, 0, 85)
+    modeSection.Position = UDim2.new(0.05, 0, 0, 235)
+    modeSection.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
     modeSection.BorderSizePixel = 0
     modeSection.Parent = mainFrame
     
     local modeCorner = Instance.new("UICorner")
-    modeCorner.CornerRadius = UDim.new(0, 12)
+    modeCorner.CornerRadius = UDim.new(0, 15)
     modeCorner.Parent = modeSection
+    
+    local modeStroke = Instance.new("UIStroke")
+    modeStroke.Color = Color3.fromRGB(255, 100, 0)
+    modeStroke.Thickness = 2
+    modeStroke.Parent = modeSection
     
     local modeTitle = Instance.new("TextLabel")
     modeTitle.Name = "ModeTitle"
-    modeTitle.Size = UDim2.new(1, 0, 0, 20)
-    modeTitle.Position = UDim2.new(0, 10, 0, 5)
+    modeTitle.Size = UDim2.new(1, 0, 0, 25)
+    modeTitle.Position = UDim2.new(0, 15, 0, 8)
     modeTitle.BackgroundTransparency = 1
     modeTitle.Font = Enum.Font.GothamBold
-    modeTitle.TextSize = 12
+    modeTitle.TextSize = 14
     modeTitle.TextColor3 = Color3.fromRGB(255, 150, 0)
     modeTitle.TextXAlignment = Enum.TextXAlignment.Left
     modeTitle.Parent = modeSection
-    modeTitle.Text = "MODALITÀ VOLO"
+    modeTitle.Text = "🎮 MODALITÀ VOLO"
     
-    -- Bottoni modalità
     local modes = {"Normal", "Smooth", "Turbo"}
     for i, mode in ipairs(modes) do
         local modeButton = Instance.new("TextButton")
         modeButton.Name = mode .. "Button"
-        modeButton.Size = UDim2.new(0.3, 0, 0, 25)
-        modeButton.Position = UDim2.new((i-1) * 0.35 + 0.02, 0, 0, 30)
-        modeButton.BackgroundColor3 = i == 1 and Color3.fromRGB(255, 100, 0) or Color3.fromRGB(40, 40, 50)
+        modeButton.Size = UDim2.new(0.28, 0, 0, 35)
+        modeButton.Position = UDim2.new((i-1) * 0.32 + 0.05, 0, 0, 40)
+        modeButton.BackgroundColor3 = i == 1 and Color3.fromRGB(255, 100, 0) or Color3.fromRGB(45, 30, 60)
         modeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         modeButton.Font = Enum.Font.GothamBold
-        modeButton.TextSize = 12
+        modeButton.TextSize = 13
         modeButton.Parent = modeSection
         modeButton.Text = mode
         modeButton.BorderSizePixel = 0
         
-        local modeButtonCorner = Instance.new("UICorner")
-        modeButtonCorner.CornerRadius = UDim.new(0, 8)
-        modeButtonCorner.Parent = modeButton
+        local modeCorner2 = Instance.new("UICorner")
+        modeCorner2.CornerRadius = UDim.new(0, 10)
+        modeCorner2.Parent = modeButton
+        
+        local modeStroke2 = Instance.new("UIStroke")
+        modeStroke2.Color = i == 1 and Color3.fromRGB(255, 150, 0) or Color3.fromRGB(100, 100, 120)
+        modeStroke2.Thickness = 2
+        modeStroke2.Parent = modeButton
         
         modeButton.MouseButton1Click:Connect(function()
             Config.currentMode = mode
             for _, btn in ipairs(modeSection:GetChildren()) do
                 if btn:IsA("TextButton") then
-                    btn.BackgroundColor3 = btn.Name == mode .. "Button" and Color3.fromRGB(255, 100, 0) or Color3.fromRGB(40, 40, 50)
+                    local isSelected = btn.Name == mode .. "Button"
+                    btn.BackgroundColor3 = isSelected and Color3.fromRGB(255, 100, 0) or Color3.fromRGB(45, 30, 60)
+                    btn:FindFirstChild("UIStroke").Color = isSelected and Color3.fromRGB(255, 150, 0) or Color3.fromRGB(100, 100, 120)
                 end
             end
+            statusLabel.Text = "● MODALITÀ: " .. mode:upper()
         end)
     end
     
-    -- ===== PULSANTE FLY =====
+    -- ===== PULSANTE FLY PRINCIPALE =====
     local flyButton = Instance.new("TextButton")
     flyButton.Name = "FlyButton"
-    flyButton.Size = UDim2.new(0.9, 0, 0, 50)
-    flyButton.Position = UDim2.new(0.05, 0, 0, 270)
+    flyButton.Size = UDim2.new(0.9, 0, 0, 55)
+    flyButton.Position = UDim2.new(0.05, 0, 0, 335)
     flyButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
     flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     flyButton.Font = Enum.Font.GothamBold
-    flyButton.TextSize = 18
+    flyButton.TextSize = 20
     flyButton.Parent = mainFrame
     flyButton.Text = "🚀 ATTIVA VOLO"
     flyButton.BorderSizePixel = 0
     
-    local flyButtonCorner = Instance.new("UICorner")
-    flyButtonCorner.CornerRadius = UDim.new(0, 12)
-    flyButtonCorner.Parent = flyButton
+    local flyCorner = Instance.new("UICorner")
+    flyCorner.CornerRadius = UDim.new(0, 15)
+    flyCorner.Parent = flyButton
+    
+    local flyStroke = Instance.new("UIStroke")
+    flyStroke.Color = Color3.fromRGB(255, 150, 0)
+    flyStroke.Thickness = 3
+    flyStroke.Parent = flyButton
+    
+    local flyGradient = Instance.new("UIGradient")
+    flyGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 80, 0))
+    })
+    flyGradient.Parent = flyButton
     
     flyButton.MouseButton1Click:Connect(function()
         if Config.flying then
             stopFlying()
             flyButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
             flyButton.Text = "🚀 ATTIVA VOLO"
-            statusLabel.Text = "✓ Pronto"
+            statusLabel.Text = "● PRONTO"
             statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
         else
             startFlying()
             flyButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
             flyButton.Text = "⛔ DISATTIVA VOLO"
-            statusLabel.Text = "► In Volo - " .. Config.currentMode
+            statusLabel.Text = "● IN VOLO - " .. Config.currentMode:upper()
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 0)
         end
     end)
     
-    -- ===== CONTROLLI INFO =====
-    local controlsLabel = Instance.new("TextLabel")
-    controlsLabel.Name = "Controls"
-    controlsLabel.Size = UDim2.new(0.9, 0, 0, 95)
-    controlsLabel.Position = UDim2.new(0.05, 0, 0, 330)
-    controlsLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    controlsLabel.BorderSizePixel = 0
-    controlsLabel.Font = Enum.Font.Gotham
-    controlsLabel.TextSize = 11
-    controlsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    controlsLabel.TextWrapped = true
-    controlsLabel.Parent = mainFrame
-    
-    local controlsCorner = Instance.new("UICorner")
-    controlsCorner.CornerRadius = UDim.new(0, 12)
-    controlsCorner.Parent = controlsLabel
-    
-    controlsLabel.Text = "CONTROLLI:\n\nW/A/S/D - Movimento orizzontale\nMuovi Vista - Su/Giù\nSpaziatore - Hover (modalità Smooth)\nCtrl - Scendi veloce"
-    
-    -- ===== PULSANTE CHIUDI =====
-    local closeButton = Instance.new("TextButton")
-    closeButton.Name = "CloseButton"
-    closeButton.Size = UDim2.new(0, 40, 0, 40)
-    closeButton.Position = UDim2.new(1, -50, 0, 10)
-    closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeButton.Font = Enum.Font.GothamBold
-    closeButton.TextSize = 24
-    closeButton.Parent = mainFrame
-    closeButton.Text = "×"
-    closeButton.BorderSizePixel = 0
-    
-    local closeButtonCorner = Instance.new("UICorner")
-    closeButtonCorner.CornerRadius = UDim.new(0, 12)
-    closeButtonCorner.Parent = closeButton
-    
-    closeButton.MouseButton1Click:Connect(function()
-        Config.panelOpen = false
-        mainFrame.Visible = false
+    -- Effetto hover sul pulsante
+    flyButton.MouseEnter:Connect(function()
+        if not Config.flying then
+            flyButton.BackgroundColor3 = Color3.fromRGB(255, 130, 30)
+        end
     end)
     
-    -- ===== DRAG FUNCTIONALITY =====
+    flyButton.MouseLeave:Connect(function()
+        if not Config.flying then
+            flyButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+        end
+    end)
+    
+    -- ===== SEZIONE CONTROLLI =====
+    local controlsSection = Instance.new("Frame")
+    controlsSection.Size = UDim2.new(0.9, 0, 0, 115)
+    controlsSection.Position = UDim2.new(0.05, 0, 0, 405)
+    controlsSection.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
+    controlsSection.BorderSizePixel = 0
+    controlsSection.Parent = mainFrame
+    
+    local controlsCorner = Instance.new("UICorner")
+    controlsCorner.CornerRadius = UDim.new(0, 15)
+    controlsCorner.Parent = controlsSection
+    
+    local controlsStroke = Instance.new("UIStroke")
+    controlsStroke.Color = Color3.fromRGB(100, 200, 255)
+    controlsStroke.Thickness = 2
+    controlsStroke.Parent = controlsSection
+    
+    local controlsTitle = Instance.new("TextLabel")
+    controlsTitle.Name = "ControlsTitle"
+    controlsTitle.Size = UDim2.new(1, 0, 0, 25)
+    controlsTitle.Position = UDim2.new(0, 15, 0, 8)
+    controlsTitle.BackgroundTransparency = 1
+    controlsTitle.Font = Enum.Font.GothamBold
+    controlsTitle.TextSize = 14
+    controlsTitle.TextColor3 = Color3.fromRGB(100, 200, 255)
+    controlsTitle.TextXAlignment = Enum.TextXAlignment.Left
+    controlsTitle.Parent = controlsSection
+    controlsTitle.Text = "⌨️ CONTROLLI"
+    
+    local controlsLabel = Instance.new("TextLabel")
+    controlsLabel.Name = "Controls"
+    controlsLabel.Size = UDim2.new(1, -30, 0, 80)
+    controlsLabel.Position = UDim2.new(0, 15, 0, 35)
+    controlsLabel.BackgroundTransparency = 1
+    controlsLabel.Font = Enum.Font.Gotham
+    controlsLabel.TextSize = 11
+    controlsLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
+    controlsLabel.TextWrapped = true
+    controlsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    controlsLabel.TextYAlignment = Enum.TextYAlignment.Top
+    controlsLabel.Parent = controlsSection
+    controlsLabel.Text = "W/A/S/D: Movimento orizzontale\nMuovi Vista: Su/Giù automaticamente\nSpace: Hover (Smooth mode)\nCtrl: Scendi veloce / Accelera (Turbo)"
+    
+    -- ===== DRAG FUNCTIONALITY PREMIUM =====
     local dragging = false
     local dragStart
     local frameStart
@@ -422,7 +563,7 @@ local function startFlying()
             end
         elseif Config.currentMode == "Turbo" then
             if inputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-                Config.speed = Config.speed + Config.acceleration
+                Config.speed = clamp(Config.speed + Config.acceleration, 1, Config.maxSpeed)
             end
         end
         
@@ -434,7 +575,6 @@ local function startFlying()
         
         bodyGyro.CFrame = camera.CFrame
         
-        -- Aggiorna display velocità
         if speedLabel then
             speedLabel.Text = round(Config.speed, 1) .. " / " .. Config.maxSpeed
         end
@@ -468,9 +608,6 @@ end
 -- ================================
 player.CharacterAdded:Connect(function()
     stopFlying()
-    if screenGui then
-        screenGui:Destroy()
-    end
     wait(0.5)
     character = player.Character or player.CharacterAdded:Wait()
     humanoidRootPart = character:WaitForChild("HumanoidRootPart")
@@ -487,5 +624,5 @@ end)
 -- ================================
 createGui()
 
-print("✅ DRAGON FLY PRO CARICATO!")
-print("🐉 Pannello GUI aperto - Versione Avanzata")
+print("✅ DRAGON FLY PRO V2 CARICATO!")
+print("🐉 Pannello GUI aperto - Versione Ultra Premium")
