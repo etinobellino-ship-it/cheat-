@@ -1,0 +1,131 @@
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local flying = false
+local speed = 50
+
+local attachment
+local linearVelocity
+local alignOrientation
+local flyConnection
+
+local function startFly()
+	if flying then return end
+	flying = true
+
+	-- Ricontrolla il personaggio
+	character = player.Character or player.CharacterAdded:Wait()
+	humanoid = character:WaitForChild("Humanoid")
+	humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+	-- Disattiva il movimento normale
+	humanoid.PlatformStand = true
+	humanoid.AutoRotate = false
+
+	-- Attachment
+	attachment = Instance.new("Attachment")
+	attachment.Name = "FlyAttachment"
+	attachment.Parent = humanoidRootPart
+
+	-- Movimento
+	linearVelocity = Instance.new("LinearVelocity")
+	linearVelocity.Name = "FlyVelocity"
+	linearVelocity.Attachment0 = attachment
+	linearVelocity.MaxForce = math.huge
+	linearVelocity.VectorVelocity = Vector3.zero
+	linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.World
+	linearVelocity.Parent = humanoidRootPart
+
+	-- Rotazione verso la camera
+	alignOrientation = Instance.new("AlignOrientation")
+	alignOrientation.Name = "FlyOrientation"
+	alignOrientation.Attachment0 = attachment
+	alignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment
+	alignOrientation.MaxTorque = math.huge
+	alignOrientation.Responsiveness = 25
+	alignOrientation.Parent = humanoidRootPart
+
+	flyConnection = RunService.RenderStepped:Connect(function()
+		if not flying or not humanoidRootPart.Parent then
+			return
+		end
+
+		local camera = workspace.CurrentCamera
+		local moveDirection = Vector3.zero
+
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+			moveDirection += camera.CFrame.LookVector
+		end
+
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+			moveDirection -= camera.CFrame.LookVector
+		end
+
+		if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+			moveDirection -= camera.CFrame.RightVector
+		end
+
+		if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+			moveDirection += camera.CFrame.RightVector
+		end
+
+		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+			moveDirection += Vector3.new(0, 1, 0)
+		end
+
+		if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+			moveDirection -= Vector3.new(0, 1, 0)
+		end
+
+		if moveDirection.Magnitude > 0 then
+			linearVelocity.VectorVelocity = moveDirection.Unit * speed
+		else
+			linearVelocity.VectorVelocity = Vector3.zero
+		end
+
+		-- Guarda la direzione della camera senza inclinare il personaggio
+		local look = camera.CFrame.LookVector
+		local flatLook = Vector3.new(look.X, 0, look.Z)
+
+		if flatLook.Magnitude > 0 then
+			alignOrientation.CFrame = CFrame.lookAt(
+				humanoidRootPart.Position,
+				humanoidRootPart.Position + flatLook.Unit
+			)
+		end
+	end)
+
+	print("✅ VOLO ATTIVATO!")
+end
+
+local function stopFly()
+	if not flying then return end
+	flying = false
+
+	if flyConnection then
+		flyConnection:Disconnect()
+		flyConnection = nil
+	end
+
+	if linearVelocity then
+		linearVelocity:Destroy()
+		linearVelocity = nil
+	end
+
+	if alignOrientation then
+		alignOrientation:Destroy()
+		alignOrientation = nil
+	end
+
+	if attachment then
+		attachment:Destroy()
+		attachment = nil
+	end
+
+	if humanoid then
+		humanoid.PlatformStand = false
+		humanoid.AutoRotate = true
+	end
+
+	print("⛔ VOLO DISATTIVATO!")
+end
